@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Used Car Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            margin: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        .result-container h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .price-result {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-description {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Second Hand Car Price Predictor</h1>
+            <p>Get an instant price estimate for your used car</p>
+        </header>
+
+        <div class="form-container">
+            <form id="carForm">
+                <div class="form-group">
+                    <label for="brand">Brand:</label> 
+                    <select id="brand" name="brand" required>
+                        <option value="">Select Brand</option>
+                        <option value="Toyota">Toyota</option>
+                        <option value="Honda">Honda</option>
+                        <option value="Ford">Ford</option>
+                        <option value="BMW">BMW</option>
+                        <option value="Hyundai">Hyundai</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="year">Year of Manufacture:</label>
+                    <input type="number" id="year" name="year" min="1990" max="2024" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="km_driven">Kilometers Driven:</label>
+                    <input type="number" id="km_driven" name="km_driven" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fuel_type">Fuel Type:</label>
+                    <select id="fuel_type" name="fuel_type" required>
+                        <option value="">Select Fuel Type</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Electric">Electric</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transmission">Transmission:</label>
+                    <select id="transmission" name="transmission" required>
+                        <option value="">Select Transmission</option>
+                        <option value="Manual">Manual</option>
+                        <option value="Automatic">Automatic</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="owner">Owner Type:</label>
+                    <select id="owner" name="owner" required>
+                        <option value="">Select Owner Type</option>
+                        <option value="First">First Owner</option>
+                        <option value="Second">Second Owner</option>
+                        <option value="Third">Third Owner</option>
+                        <option value="Fourth & Above">Fourth & Above</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="predict-btn">Predict Price</button>
+            </form>
+        </div>
+
+        <div id="result" class="result-container" style="display: none;">
+            <h2>Predicted Price</h2>
+            <div class="price-result">
+                <span id="priceCategory"></span>
+            </div> 
+            <p class="result-description" id="resultDescription"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('carForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                brand: document.getElementById('brand').value,
+                year: parseInt(document.getElementById('year').value),
+                km_driven: parseInt(document.getElementById('km_driven').value),
+                fuel_type: document.getElementById('fuel_type').value,
+                transmission: document.getElementById('transmission').value,
+                owner: document.getElementById('owner').value
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json(); 
+
+                if (data.error) { 
+                    alert('Error: ' + data.error);
+                } else {
+                    const resultDiv = document.getElementById('result');
+                    document.getElementById('priceCategory').textContent = `₹${data.predicted_price.toLocaleString('en-IN')}`;
+                    document.getElementById('resultDescription').textContent = 'Predicted price based on your car details.';
+                    resultDiv.style.display = 'block';
+                    resultDiv.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Error connecting to server: ' + error.message); 
+            }
+        });
+    </script>
+</body>
+</html>
